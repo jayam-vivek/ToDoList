@@ -11,10 +11,19 @@ import UIKit
 class ToDoListViewController: UITableViewController{
     
     var hardCodedArrayItems = ["one","two","three"]
+    
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        //Using UserDefaults
+        
+        if let items = defaults.array(forKey: "ToDoListArray") as? [String]{
+            hardCodedArrayItems = items
+        }
+        
     }
     
     
@@ -70,6 +79,7 @@ class ToDoListViewController: UITableViewController{
         
         alert.addTextField { (alertTextField) in
             alertTextField.placeholder = "Create New Item"
+            self.defaults.set(self.hardCodedArrayItems, forKey: "ToDoListArray")
             textField = alertTextField
         }
         
