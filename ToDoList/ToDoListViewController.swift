@@ -18,7 +18,7 @@ class ToDoListViewController: UITableViewController{
     }
     
     
-    //MARK : Table View DataSource Methods
+    //MARK: Table View DataSource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return hardCodedArrayItems.count
@@ -46,7 +46,38 @@ class ToDoListViewController: UITableViewController{
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
-
+    
+    //MARK: Adding an Item
+    
+    
+    @IBAction func addItem(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { (alertAction) in
+            //What should happen when add item button is pressed
+            
+            self.hardCodedArrayItems.append(textField.text!)
+            
+            //To update the array everytime we add a new item
+            
+            self.tableView.reloadData()
+        }
+        
+        //Adding a textField to an alert
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create New Item"
+            textField = alertTextField
+        }
+        
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+        
+    }
+    
 
 }
 
