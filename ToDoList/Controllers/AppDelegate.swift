@@ -17,9 +17,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
-        //Path of our app storage
+        //Path of our app storage(one way)
         let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         print(path)
+//        //other way
+//        let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+//        print(filePath!)
         return true
     }
 
