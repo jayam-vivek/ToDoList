@@ -137,18 +137,80 @@ class ToDoListViewController: UITableViewController{
     }
     
     //MARK: RETRIEVE DATA
-    func loadItems(){
-        
-        let readRequest : NSFetchRequest<Item> = Item.fetchRequest()
+    
+    //HERE WE ARE USING THE METHOD WITH EXTERNAL AND INTERNAL PARAMETERS
+    //WITH IS A EXTERNAL PARAMETER
+    //FETCHREQUEST IS A INTERNAL PARAMATER
+    //WE ALSO PROVIDED THE DEFAULT VALUE SO IT WILL NOT BE A PROBLEM IF NO VALUE IS PROVIDED
+    
+    func loadItems(with fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()){
+
+
         do{
-            arrayItems = try context.fetch(readRequest)
+            arrayItems = try context.fetch(fetchRequest)
         }
         catch{
             print(error)
         }
-    
+
     tableView.reloadData()
 
 }
+    
+                                     //OR
+    
+    //ANOTHER WAY
+    
+//    func loadItems(fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()){
+//
+//
+//        do{
+//            arrayItems = try context.fetch(fetchRequest)
+//        }
+//        catch{
+//            print(error)
+//        }
+//
+//        tableView.reloadData()
+//
+//    }
 
+}
+
+//MARK: Search Bar Implementation
+
+extension ToDoListViewController : UISearchBarDelegate {
+    
+    //connected search bar delegate through storyboard
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+         let request : NSFetchRequest<Item> = Item.fetchRequest()
+        //cd makes search insensitive
+         request.predicate = NSPredicate(format: "itemName CONTAINS[cd] %@", searchBar.text!)
+        
+        let sortData = NSSortDescriptor(key: "itemName", ascending: true)
+        request.sortDescriptors = [sortData]
+        
+        loadItems(with: request)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchBar.text?.count == 0 {
+            
+            // To Make the cursor disappear after reaching to original list
+            loadItems()
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
+        
+    
+        
+        
+       
+        
+    }
+    
 }
