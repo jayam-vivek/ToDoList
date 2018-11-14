@@ -7,10 +7,13 @@
 //
 
 import UIKit
+import CoreData
 
 class ToDoListViewController: UITableViewController{
     
     var arrayItems = [Item]()
+    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
  
@@ -56,6 +59,12 @@ class ToDoListViewController: UITableViewController{
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         //used to avoid checkmark problems when we scroll down in case of many items
         
+        
+        // DELETE OPERATIONS
+        
+//        context.delete(arrayItems[indexPath.row])
+//        arrayItems.remove(at: indexPath.row)
+        
         arrayItems[indexPath.row].checked = !arrayItems[indexPath.row].checked
         
         saveItems()
@@ -84,9 +93,12 @@ class ToDoListViewController: UITableViewController{
         let action = UIAlertAction(title: "Add Item", style: .default) { (alertAction) in
             //What should happen when add item button is pressed
             
-          let newItem = Item()
+     
+            
+          let newItem = Item(context: self.context)
             
             newItem.itemName = textField.text!
+            newItem.checked = false
             
             self.arrayItems.append(newItem)
             
@@ -113,11 +125,9 @@ class ToDoListViewController: UITableViewController{
     //MARK: SAVE METHOD
     
     func saveItems(){
-        let encoder = PropertyListEncoder()
+     
         do{
-            let writeData = try encoder.encode(arrayItems)
-            try writeData.write(to : filePath!)
-            
+            try context.save()
         }catch{
             print(error)
         }
@@ -128,17 +138,17 @@ class ToDoListViewController: UITableViewController{
     
     //MARK: RETRIEVE DATA
     func loadItems(){
-        if let readData = try? Data(contentsOf: filePath!){
-            let decoder = PropertyListDecoder()
-            do{
-                arrayItems = try decoder.decode([Item].self, from: readData)
-            }catch{
-                print(error)
-            }
-           
+        
+        let readRequest : NSFetchRequest<Item> = Item.fetchRequest()
+        do{
+            arrayItems = try context.fetch(readRequest)
         }
-    }
+        catch{
+            print(error)
+        }
     
+    tableView.reloadData()
 
 }
 
+}
