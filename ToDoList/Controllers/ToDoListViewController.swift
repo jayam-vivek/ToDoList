@@ -13,20 +13,25 @@ class ToDoListViewController: UITableViewController{
     
     var arrayItems = [Item]()
     
+    var selectedCategory:Category? {
+        
+        //WE USE THIS PROPERTY SO THAT THE ITEMS WILL BE LOADED ONLY WHEN A CATEGORY IS SELECTED
+        
+        didSet{
+            loadItems()
+        }
+    }
+    
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
  
     
   
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
         // Do any additional setup after loading the view, typically from a nib.
-        loadItems()
-      
-        
     }
     
     
@@ -100,6 +105,10 @@ class ToDoListViewController: UITableViewController{
             newItem.itemName = textField.text!
             newItem.checked = false
             
+            //THIS IS DONE TO KNOW THE SELECTED CATEGORY BASED ON RELATIONSHIPS WE CREATED
+            
+            newItem.itemToCategory = self.selectedCategory
+            
             self.arrayItems.append(newItem)
             
             //To update the array everytime we add a new item
@@ -142,8 +151,29 @@ class ToDoListViewController: UITableViewController{
     //WITH IS A EXTERNAL PARAMETER
     //FETCHREQUEST IS A INTERNAL PARAMATER
     //WE ALSO PROVIDED THE DEFAULT VALUE SO IT WILL NOT BE A PROBLEM IF NO VALUE IS PROVIDED
+    // HERE WE ARE TAKING SECOND PARAMETER AS PREDICATE BECAUSE IT SHOULD OVERRIDE THE SEARCH BAR PREDICATE AND WE CREATE A COMPOUND PREDICATE
+    //WE PROVIDE A DEFAULT VALUE NIL TO PREDICATE SO THAT WE CAN LOAD THE DATA WITHOUT ARGUMENTS
     
-    func loadItems(with fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()){
+    func loadItems(with fetchRequest: NSFetchRequest<Item> = Item.fetchRequest(),recievedPredicate : NSPredicate? = nil){
+        
+        
+        let categoryPredicte = NSPredicate(format: "itemToCategory.categoryName MATCHES %@", selectedCategory!.categoryName!)
+        
+        //USING IF LET TO PERFORM OPTIONAL BINDING BECAUSE WE HAVE AN OPTIONAL ARGUEMENT
+        
+        if let recievedSearchBarPredicate = recievedPredicate{
+            
+            //WHEN OPTIONAL PREDICATE  IS NOT NIL
+            
+            let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicte,recievedSearchBarPredicate])
+            fetchRequest.predicate = compoundPredicate
+        }
+        else{
+            
+            //WHEN OPTIONAL PREDICATE IS NIL
+            
+            fetchRequest.predicate = categoryPredicte
+        }
 
 
         do{
@@ -187,12 +217,12 @@ extension ToDoListViewController : UISearchBarDelegate {
         
          let request : NSFetchRequest<Item> = Item.fetchRequest()
         //cd makes search insensitive
-         request.predicate = NSPredicate(format: "itemName CONTAINS[cd] %@", searchBar.text!)
+         let searchBarPredicate = NSPredicate(format: "itemName CONTAINS[cd] %@", searchBar.text!)
         
         let sortData = NSSortDescriptor(key: "itemName", ascending: true)
         request.sortDescriptors = [sortData]
         
-        loadItems(with: request)
+        loadItems(with: request,recievedPredicate: searchBarPredicate)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
